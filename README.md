@@ -12,9 +12,12 @@ A prototype that simulates a mobile Path@Penn workflow with **three screens**:
 
 ## Files
 /
-├─ index.html # Markup + small inline JS for screen switching, modals, and button state
-├─ styles.css # Styles for layout, modals, cards, and schedule grid
-└─ README.md # This file
+
+|- index.html # Markup + small inline JS for screen switching, modals, and button state
+
+|- styles.css # Styles for layout, modals, cards, and schedule grid
+
+|- README.md # This file
 
 ## How to Run
 
