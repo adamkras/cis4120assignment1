@@ -1,0 +1,180 @@
+/* ==========================================================================
+   Path@Penn Mobile Prototype — styles.css
+   Purpose: Layout and visual styling for three screens (Search, Course, Schedule)
+   Notes:
+   - Buttons for advanced filters turn green when ≥1 selection is checked.
+   - Modals are centered overlays; clicking the backdrop closes them.
+   - Schedule cards show seats remaining and Add/Added state colors.
+   ========================================================================== */
+
+/* ---------- Global reset ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ---------- App canvas (mobile frame) ---------- */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f5f5f5;
+  display: flex; justify-content: center; align-items: flex-start;
+  min-height: 100vh; padding: 20px;
+}
+
+/* Simulated iPhone-sized viewport */
+.phone-frame {
+  width: 393px; height: 780px; background-color: #fff;
+  border: 2px solid #ddd; border-radius: 25px; overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2); position: relative;
+}
+
+/* ---------- Screen visibility handling ---------- */
+.screen { display: none; width: 100%; height: 100%; padding: 20px; overflow-y: auto; }
+.screen.active { display: block; }
+
+/* ---------- Header (logo + greeting) ---------- */
+.header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 0 20px 0; border-bottom:1px solid #eee; margin-bottom:20px;
+}
+.penn-logo {
+  width:40px; height:40px; background:#011f5b; color:#fff; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px;
+}
+.welcome { font-size:16px; font-weight:600; color:#333; }
+
+/* ---------- Top tabs ---------- */
+.nav-tabs { display:flex; gap:8px; margin-bottom:20px; }
+.nav-tab {
+  flex:1; padding:12px 8px; text-align:center; border:2px solid #011f5b;
+  background:#fff; color:#011f5b; font-size:14px; font-weight:500; cursor:pointer; transition:.2s;
+}
+.nav-tab.active { background:#011f5b; color:#fff; }
+
+/* ---------- Section headers (Search / Overview / Course) ---------- */
+.search-header, .overview-header {
+  background:#ff9999; color:#8b0000; padding:12px; margin:0 -20px 20px -20px; font-size:16px; font-weight:600;
+}
+.course-header {
+  background:#f0f0f0; color:#8b0000; padding:12px; margin:0 -20px 20px -20px;
+  font-size:16px; font-weight:600; display:flex; align-items:center; gap:10px;
+}
+.back-arrow { cursor:pointer; font-size:18px; }
+
+/* ---------- Form controls ---------- */
+.form-group { margin-bottom:15px; }
+.form-label { display:block; font-size:14px; font-weight:600; color:#333; margin-bottom:5px; }
+.form-input, textarea {
+  width:100%; padding:10px; border:2px solid #ccc; border-radius:4px; font-size:14px; background:#fff;
+}
+.checkbox-group { display:flex; align-items:center; gap:8px; margin:15px 0; }
+
+/* Primary search action */
+.search-btn {
+  width:100%; padding:12px; background:#90EE90; border:2px solid #228B22; color:#006400;
+  font-size:14px; font-weight:700; cursor:pointer; margin-bottom:15px;
+}
+
+/* Advanced search section wrapper */
+.advanced-search { border-top:1px solid #eee; padding-top:15px; }
+.advanced-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+
+/* ---------- Picker buttons (open modals) ---------- */
+.ms-group { margin-bottom:14px; }
+.ms-legend { font-size:14px; font-weight:600; color:#333; margin-bottom:6px; }
+
+/* Neutral button; shows count; becomes green when .btn-chosen is applied */
+.picker-btn {
+  width:100%; padding:10px; border:2px solid #ccc; border-radius:4px;
+  background:#fff; color:#333; font-weight:700; cursor:pointer; text-align:left;
+}
+.picker-btn span.count { font-weight:600; color:#555; }
+.picker-btn.btn-chosen {
+  background:#90EE90; border-color:#228B22; color:#006400;
+}
+
+/* ---------- Modal overlay and content ---------- */
+.modal {
+  position: fixed; inset: 0; display:none; place-items:center;
+  background: rgba(0,0,0,.45); padding: 20px; z-index: 10;
+}
+.modal.active { display:grid; }
+
+/* Card that holds the modal list and controls */
+.modal-card {
+  width: 100%; max-width: 360px; background:#fff; border:2px solid #ccc; border-radius:10px; padding:14px;
+}
+
+/* Scrollable area for options */
+.school-modal { max-height: 320px; overflow-y:auto; }
+.school-option { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #eee; }
+.school-option:last-child { border-bottom:none; }
+
+/* ---------- Course detail view ---------- */
+.course-title { font-size:18px; font-weight:700; color:#333; margin-bottom:5px; }
+.course-subtitle { font-size:24px; font-weight:700; color:#000; margin-bottom:10px; }
+.course-meta { font-size:12px; color:#666; margin-bottom:5px; }
+.course-updated { color:#8b0000; font-size:12px; margin-bottom:20px; }
+
+.section-group { margin-bottom:25px; }
+.section-title { color:#06c; font-size:16px; font-weight:700; margin-bottom:10px; }
+
+/* Lecture/recitation rows */
+.section-item { border:2px solid #ccc; border-radius:4px; padding:12px; margin-bottom:8px; position:relative; }
+.section-item.available { border-color:#228B22; }
+.section-item.full { border-color:#FFA500; }
+.section-checkbox { position:absolute; top:12px; right:12px; }
+.section-info { font-size:12px; color:#333; line-height:1.4; margin-right:30px; }
+.section-availability { font-weight:700; margin-top:5px; }
+
+/* ---------- Schedule grid on course screen ---------- */
+.schedule-grid { margin-top:20px; }
+.schedule-title { color:#8b0000; font-size:14px; font-weight:700; margin-bottom:10px; }
+.schedule-table { width:100%; border-collapse:collapse; font-size:10px; }
+.schedule-table th { background:#f0f0f0; padding:5px 2px; border:1px solid #ccc; font-weight:700; }
+.schedule-table td { border:1px solid #ccc; height:20px; position:relative; }
+.schedule-block { position:absolute; width:100%; height:100%; opacity:.8; }
+.schedule-block.existing { background:#FFD700; }
+.schedule-block.new { background:#87CEEB; }
+
+/* ---------- Schedule (dashboard) tiles ---------- */
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px; }
+.stat-item { text-align:center; }
+.stat-number { font-size:18px; font-weight:700; color:#333; }
+.stat-label { font-size:12px; color:#666; }
+
+/* ---------- Cart list and cards ---------- */
+.cart-section { margin-top:20px; }
+.cart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+.cart-title { font-size:16px; font-weight:700; color:#333; }
+.clear-cart { color:#06c; font-size:14px; cursor:pointer; }
+
+/* Course card container */
+.course-card {
+  border:2px solid #ccc; border-radius:8px; padding:12px; margin-bottom:12px; background:#fff;
+  box-shadow: 0 1px 0 rgba(0,0,0,.05);
+}
+.course-card-title { font-size:18px; font-weight:700; color:#333; margin-bottom:4px; }
+.course-card-time { font-size:14px; color:#666; margin-bottom:8px; }
+
+/* ---------- CIS 4120 permission request row ---------- */
+.perm-box { border:2px solid #ccc; border-radius:6px; padding:8px; margin:8px 0; background:#fafafa; }
+.perm-row { display:flex; align-items:center; gap:8px; }
+.perm-label { font-weight:700; }
+.perm-line { flex:1; height:2px; background:#cfcfcf; }
+.status-badge { display:inline-block; padding:6px 10px; border-radius:8px; font-size:12px; font-weight:700; }
+.status-approved { background:#c9f3d3; color:#0b6c2c; }
+
+/* ---------- Card footer: seats and action button ---------- */
+.card-footer { margin-top:8px; display:flex; justify-content:space-between; align-items:center; }
+
+/* Seats indicator on the left of each card footer */
+.seats-pill {
+  font-size:12px; font-weight:700; color:#333;
+  background:#fff; border:2px solid #ccc; border-radius:4px; padding:4px 8px;
+}
+
+/* Add/Added button (right side). Red = "Add", Green = "Added" */
+.action-btn {
+  padding:6px 10px; border-radius:4px; font-weight:700; cursor:pointer; font-size:14px;
+  border:2px solid transparent;
+}
+.action-btn.add { background:#ffe7e7; color:#8b0000; border-color:#cc3a3a; }   /* red state */
+.action-btn.added { background:#90EE90; color:#064d00; border-color:#228B22; } /* green state */
