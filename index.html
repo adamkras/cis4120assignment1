@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    Path@Penn Mobile Prototype
+    Screens included: Search, Course (CIS 1200), Schedule
+    Purpose: mobile-style prototype with multi-select filters and simple screen switching
+    Notes:
+    • Advanced Search fields open modal selectors; button turns green when ≥1 item selected.
+    • Schedule cards show seats remaining and Add/Added state; CIS 4120 includes a permission box.
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Path@Penn Mobile Prototype</title>
+  <!-- External stylesheet for layout and visual design -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Phone-sized frame to simulate a mobile device viewport -->
+  <div class="phone-frame">
+
+    <!-- =========================================================
+         SCREEN: SEARCH
+         Purpose: enter keyword, toggle "no overlap", and open
+         multi-select filters via buttons (modals).
+         ========================================================= -->
+    <section class="screen active" id="screen-search">
+      <!-- App header -->
+      <div class="header">
+        <div class="penn-logo">P</div>
+        <div class="welcome">Welcome, Adam</div>
+      </div>
+
+      <!-- Top navigation tabs (Register highlighted on this screen) -->
+      <div class="nav-tabs">
+        <div class="nav-tab active" onclick="showScreen('search')">Register</div>
+        <div class="nav-tab">Plan</div>
+        <div class="nav-tab" onclick="showScreen('schedule')">Schedule</div>
+        <div class="nav-tab">Profile</div>
+      </div>
+
+      <!-- Search form -->
+      <div class="search-header">Search Classes</div>
+
+      <div class="form-group">
+        <label class="form-label">Term</label>
+        <input type="text" class="form-input" value="Fall 2025"/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Keyword</label>
+        <input type="text" class="form-input" placeholder="Title, Subject, Instructor"/>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="overlap"/>
+        <label for="overlap">Don't overlap primary cart</label>
+      </div>
+
+      <!-- Prototype action: routes directly to the Course screen -->
+      <button class="search-btn" onclick="showScreen('course')">Search</button>
+
+      <!-- Advanced Search: each field is a button that opens a modal with checkboxes -->
+      <div class="advanced-search">
+        <div class="advanced-header">
+          <span class="form-label">Advanced Search</span><span>▼</span>
+        </div>
+
+        <!-- Exclude Times control and placeholder Edit trigger -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="exclude"/>
+          <label for="exclude">Exclude Times</label>
+          <button style="margin-left:auto;padding:4px 8px;border:1px solid #ccc;">Edit</button>
+        </div>
+
+        <!-- Picker buttons: each shows a live count and turns green when ≥1 selection -->
+        <div class="ms-group">
+          <div class="ms-legend">Subject</div>
+          <button class="picker-btn" data-kind="subject" onclick="openPicker('subject')">
+            Choose Subjects <span id="inline-count-subject" class="count"></span>
+          </button>
+        </div>
+
+        <div class="ms-group">
+          <div class="ms-legend">School</div>
+          <button class="picker-btn" data-kind="school" onclick="openPicker('school')">
+            Choose Schools <span id="inline-count-school" class="count"></span>
+          </button>
+        </div>
+
+        <div class="ms-group">
+          <div class="ms-legend">Level</div>
+          <button class="picker-btn" data-kind="level" onclick="openPicker('level')">
+            Choose Levels <span id="inline-count-level" class="count"></span>
+          </button>
+        </div>
+
+        <div class="ms-group">
+          <div class="ms-legend">Schedule Type</div>
+          <button class="picker-btn" data-kind="type" onclick="openPicker('type')">
+            Choose Types <span id="inline-count-type" class="count"></span>
+          </button>
+        </div>
+
+        <div class="ms-group">
+          <div class="ms-legend">Credit</div>
+          <button class="picker-btn" data-kind="credit" onclick="openPicker('credit')">
+            Choose Credits <span id="inline-count-credit" class="count"></span>
+          </button>
+        </div>
+
+        <div class="ms-group">
+          <div class="ms-legend">Campus/Online</div>
+          <button class="picker-btn" data-kind="campus" onclick="openPicker('campus')">
+            Choose Campuses <span id="inline-count-campus" class="count"></span>
+          </button>
+        </div>
+
+        <div class="ms-group">
+          <div class="ms-legend">Class Status</div>
+          <button class="picker-btn" data-kind="status" onclick="openPicker('status')">
+            Choose Statuses <span id="inline-count-status" class="count"></span>
+          </button>
+        </div>
+
+        <div class="ms-group">
+          <div class="ms-legend">Part of Term</div>
+          <button class="picker-btn" data-kind="part" onclick="openPicker('part')">
+            Choose Parts <span id="inline-count-part" class="count"></span>
+          </button>
+        </div>
+
+        <div class="ms-group">
+          <div class="ms-legend">Honors Attributes</div>
+          <button class="picker-btn" data-kind="honors" onclick="openPicker('honors')">
+            Choose Attributes <span id="inline-count-honors" class="count"></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         PICKER MODALS
+         Each modal contains:
+         • Title
+         • (subject/school) search input or list heading
+         • Scrollable checkbox list
+         • Done and Clear buttons
+         • "Selected: N" counter
+         The modal is shown/hidden by adding/removing .active.
+         Clicking the dimmed backdrop closes the modal.
+         ========================================================= -->
+
+    <!-- Subject modal -->
+    <div class="modal" id="modal-subject" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="title-subject">
+        <div class="form-label" id="title-subject">Subject</div>
+        <input type="text" class="form-input" placeholder="Search subjects" style="margin:8px 0 10px;"/>
+        <div class="school-modal">
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> MELC – Middle Eastern Languages &amp; Cultures</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> AAMW – Art &amp; Archaeology of the Mediterranean World</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> ACCT – Accounting</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> ACFD – Academic Foundations</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> ACPL – ACPL</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> AEDS – AEDS</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> AFRC – Africana Studies</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> AFST – African Studies Program</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> ALAN – Asian Languages</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="subject"> AMCS – Applied Math &amp; Computational Science</label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="search-btn" style="margin:0; flex:1;" onclick="applyPicker('subject')">Done</button>
+          <button class="picker-btn" style="margin:0; flex:1;" onclick="clearPicker('subject')">Clear</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#666;">Selected: <span id="count-subject">0</span></div>
+      </div>
+    </div>
+
+    <!-- School modal (SEAS is pre-checked) -->
+    <div class="modal" id="modal-school" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="title-school">
+        <div class="form-label" id="title-school">School</div>
+        <input type="text" class="form-input" placeholder="Search schools" style="margin:8px 0 10px;"/>
+        <div class="school-modal">
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="school"> Annenberg School for Communication</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="school"> Graduate School of Education</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="school"> Penn Carey Law</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="school"> Perelman School of Medicine</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="school"> School of Arts and Sciences</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="school"> School of Dental Medicine</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="school" checked> School of Engineering and Applied Science</label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="search-btn" style="margin:0; flex:1;" onclick="applyPicker('school')">Done</button>
+          <button class="picker-btn" style="margin:0; flex:1;" onclick="clearPicker('school')">Clear</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#666;">Selected: <span id="count-school">0</span></div>
+      </div>
+    </div>
+
+    <!-- Level modal -->
+    <div class="modal" id="modal-level">
+      <div class="modal-card">
+        <div class="form-label">Level</div>
+        <div class="school-modal">
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="level"> Undergraduate</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="level"> Mixed Undergraduate/Graduate</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="level"> Graduate/Professional</label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="search-btn" style="margin:0; flex:1;" onclick="applyPicker('level')">Done</button>
+          <button class="picker-btn" style="margin:0; flex:1;" onclick="clearPicker('level')">Clear</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#666;">Selected: <span id="count-level">0</span></div>
+      </div>
+    </div>
+
+    <!-- Schedule Type modal -->
+    <div class="modal" id="modal-type">
+      <div class="modal-card">
+        <div class="form-label">Schedule Type</div>
+        <div class="school-modal">
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="type"> Lecture</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="type"> Clinical</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="type"> Seminar</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="type"> Laboratory</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="type"> Studio</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="type"> Recitation</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="type"> Field Work</label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="search-btn" style="margin:0; flex:1;" onclick="applyPicker('type')">Done</button>
+          <button class="picker-btn" style="margin:0; flex:1;" onclick="clearPicker('type')">Clear</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#666;">Selected: <span id="count-type">0</span></div>
+      </div>
+    </div>
+
+    <!-- Credit modal -->
+    <div class="modal" id="modal-credit">
+      <div class="modal-card">
+        <div class="form-label">Credit</div>
+        <div class="school-modal">
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="credit"> 0.5 Credits</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="credit"> 1 Credit</label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="search-btn" style="margin:0; flex:1;" onclick="applyPicker('credit')">Done</button>
+          <button class="picker-btn" style="margin:0; flex:1;" onclick="clearPicker('credit')">Clear</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#666;">Selected: <span id="count-credit">0</span></div>
+      </div>
+    </div>
+
+    <!-- Campus modal -->
+    <div class="modal" id="modal-campus">
+      <div class="modal-card">
+        <div class="form-label">Campus/Online</div>
+        <div class="school-modal">
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="campus"> Online</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="campus"> Philadelphia</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="campus"> Wharton San Francisco</label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="search-btn" style="margin:0; flex:1;" onclick="applyPicker('campus')">Done</button>
+          <button class="picker-btn" style="margin:0; flex:1;" onclick="clearPicker('campus')">Clear</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#666;">Selected: <span id="count-campus">0</span></div>
+      </div>
+    </div>
+
+    <!-- Status modal -->
+    <div class="modal" id="modal-status">
+      <div class="modal-card">
+        <div class="form-label">Class Status</div>
+        <div class="school-modal">
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="status"> Open Classes</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="status"> Open or Full Classes</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="status"> Canceled Classes</label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="search-btn" style="margin:0; flex:1;" onclick="applyPicker('status')">Done</button>
+          <button class="picker-btn" style="margin:0; flex:1;" onclick="clearPicker('status')">Clear</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#666;">Selected: <span id="count-status">0</span></div>
+      </div>
+    </div>
+
+    <!-- Part-of-Term modal -->
+    <div class="modal" id="modal-part">
+      <div class="modal-card">
+        <div class="form-label">Part of Term</div>
+        <div class="school-modal">
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="part"> Full Term</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="part"> First Half</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="part"> Second Half</label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="search-btn" style="margin:0; flex:1;" onclick="applyPicker('part')">Done</button>
+          <button class="picker-btn" style="margin:0; flex:1;" onclick="clearPicker('part')">Clear</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#666;">Selected: <span id="count-part">0</span></div>
+      </div>
+    </div>
+
+    <!-- Honors modal -->
+    <div class="modal" id="modal-honors">
+      <div class="modal-card">
+        <div class="form-label">Honors Attributes</div>
+        <div class="school-modal">
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="honors"> Honors</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="honors"> Writing</label>
+          <label class="school-option"><input type="checkbox" class="pick-box" data-kind="honors"> Service Learning</label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="search-btn" style="margin:0; flex:1;" onclick="applyPicker('honors')">Done</button>
+          <button class="picker-btn" style="margin:0; flex:1;" onclick="clearPicker('honors')">Clear</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#666;">Selected: <span id="count-honors">0</span></div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SCREEN: COURSE (CIS 1200)
+         Purpose: select lecture/recitation and preview schedule impact.
+         ========================================================= -->
+    <section class="screen" id="screen-course">
+      <div class="course-header">
+        <!-- Back arrow returns to the Search screen -->
+        <span class="back-arrow" onclick="showScreen('search')">◀</span>
+        Courses
+      </div>
+
+      <div class="course-title">CIS 1200</div>
+      <div class="course-subtitle">Programming Languages + Techniques I</div>
+      <div class="course-meta">Lecture – Recitations – Credits Vary by Section – In-Class – Philadelphia</div>
+      <div class="course-updated">Updated: 9/7 9:17 am</div>
+
+      <!-- Text area placeholder for catalog description -->
+      <div class="form-group">
+        <label class="form-label">Course Description:</label>
+        <textarea rows="3" class="form-input" placeholder="Course description would appear here..."></textarea>
+      </div>
+
+      <!-- Lecture selections -->
+      <div class="section-group">
+        <div class="section-title">Lecture</div>
+        <div class="section-item available">
+          <input type="checkbox" class="section-checkbox" checked/>
+          <div class="section-info">
+            <strong>Sec 001:</strong> MWF 10:15–11:44 am – STIT 261
+            <div class="section-availability">Seats Available: 16</div>
+          </div>
+        </div>
+        <div class="section-item full">
+          <input type="checkbox" class="section-checkbox"/>
+          <div class="section-info">
+            <strong>Sec 002:</strong> MWF 12:00–1:29 pm – STIT 261
+            <div class="section-availability" style="color:#FFA500;">Seats Available: 0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recitation selections -->
+      <div class="section-group">
+        <div class="section-title">Recitation</div>
+        <div class="section-item available">
+          <input type="checkbox" class="section-checkbox"/>
+          <div class="section-info">
+            <strong>Sec 201:</strong> W 12:00–12:59 pm – STIT 261
+            <div class="section-availability">Seats Available: 2</div>
+          </div>
+        </div>
+        <div class="section-item available">
+          <input type="checkbox" class="section-checkbox" checked/>
+          <div class="section-info">
+            <strong>Sec 201:</strong> W 1:45–2:44 pm – STIT 261
+            <div class="section-availability">Seats Available: 2</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timetable preview with selected blocks highlighted in blue -->
+      <div class="schedule-grid">
+        <div class="schedule-title">Current Schedule</div>
+        <table class="schedule-table">
+          <thead>
+            <tr><th></th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>9</td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>10</td>
+              <td><div class="schedule-block new"></div></td><td></td><td><div class="schedule-block new"></div></td><td></td><td><div class="schedule-block new"></div></td>
+            </tr>
+            <tr><td>11</td>
+              <td><div class="schedule-block new"></div></td><td></td><td><div class="schedule-block new"></div></td><td></td><td><div class="schedule-block new"></div></td>
+            </tr>
+            <tr><td>12</td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>1</td><td></td><td></td><td><div class="schedule-block new"></div></td><td></td><td></td></tr>
+            <tr><td>2</td><td></td><td></td><td><div class="schedule-block new"></div></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         SCREEN: SCHEDULE (Dashboard)
+         Purpose: show cart items, seats remaining, and Add/Added state.
+         CIS 4120 card includes a Permission Request box.
+         ========================================================= -->
+    <section class="screen" id="screen-schedule">
+      <div class="header">
+        <div class="penn-logo">P</div>
+        <div class="welcome">Welcome, Adam</div>
+      </div>
+
+      <!-- Top navigation tabs (Schedule highlighted here) -->
+      <div class="nav-tabs">
+        <div class="nav-tab" onclick="showScreen('search')">Register</div>
+        <div class="nav-tab">Plan</div>
+        <div class="nav-tab active" onclick="showScreen('schedule')">Schedule</div>
+        <div class="nav-tab">Profile</div>
+      </div>
+
+      <!-- Summary tiles -->
+      <div class="overview-header">Overview</div>
+
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-number">4 courses</div><div class="stat-label">registered</div></div>
+        <div class="stat-item"><div class="stat-number">5 credits</div><div class="stat-label">current</div></div>
+        <div class="stat-item"><div class="stat-number">0</div><div class="stat-label">outstanding approvals</div></div>
+        <div class="stat-item"><div class="stat-number">16.3</div><div class="stat-label">total hours</div></div>
+      </div>
+
+      <!-- Cart list -->
+      <div class="cart-section">
+        <div class="cart-header">
+          <div class="cart-title">Cart</div>
+          <div class="clear-cart">Clear Cart</div>
+        </div>
+
+        <!-- CIS 4120 with permission request UI and seats/action footer -->
+        <div class="course-card">
+          <div class="course-card-title">CIS 4120: Intro to HCI</div>
+          <div class="course-card-time">401: MW 1:45–3:14 pm — Head/Shi</div>
+
+          <div class="perm-box">
+            <div class="perm-row">
+              <span class="perm-label">Permission Request:</span>
+              <span class="perm-line"></span>
+              <span class="status-badge status-approved">Approved</span>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <span class="seats-pill">Seats remaining: 24</span>
+            <button class="action-btn add" onclick="toggleAdd(this)">Add</button>
+          </div>
+        </div>
+
+        <!-- Remaining courses -->
+        <div class="course-card">
+          <div class="course-card-title">CIS 4480: Operating Systems</div>
+          <div class="course-card-time">401: TR 1:45–3:14 pm — Ramirez</div>
+          <div class="card-footer">
+            <span class="seats-pill">Seats remaining: 16</span>
+            <button class="action-btn added" onclick="toggleAdd(this)">Added</button>
+          </div>
+        </div>
+
+        <div class="course-card">
+          <div class="course-card-title">CIS 4210: Artificial Intelligence</div>
+          <div class="course-card-time">401: TR 12:00–1:44 pm — C-Burch</div>
+          <div class="card-footer">
+            <span class="seats-pill">Seats remaining: 32</span>
+            <button class="action-btn added" onclick="toggleAdd(this)">Added</button>
+          </div>
+        </div>
+
+        <div class="course-card">
+          <div class="course-card-title">OIDD 2900: Decision Processes</div>
+          <div class="course-card-time">401: TR 10:15–11:44 am — Su</div>
+          <div class="card-footer">
+            <span class="seats-pill">Seats remaining: 2</span>
+            <button class="action-btn added" onclick="toggleAdd(this)">Added</button>
+          </div>
+        </div>
+
+        <div class="course-card">
+          <div class="course-card-title">ESE 2000: AI Lab</div>
+          <div class="course-card-time">401: MW 3:30–4:59 pm — Ribeiro</div>
+          <div class="card-footer">
+            <span class="seats-pill">Seats remaining: 2</span>
+            <button class="action-btn added" onclick="toggleAdd(this)">Added</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- =========================================================
+       SCRIPT
+       Handles:
+       • Screen switching and active tab highlight
+       • Modal open/close
+       • Selection counts and button color state
+       • Add/Added toggle on Schedule cards
+       ========================================================= -->
+  <script>
+    // Switches visible screen and sets active tab
+    function showScreen(which) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + which).classList.add('active');
+
+      const tabs = document.querySelectorAll('#screen-' + which + ' .nav-tabs .nav-tab');
+      tabs.forEach(t => t.classList.remove('active'));
+      if (which === 'schedule') tabs[2]?.classList.add('active'); // highlight "Schedule"
+      else tabs[0]?.classList.add('active');                      // highlight "Register"
+    }
+
+    // Opens a picker modal and refreshes the selection count
+    function openPicker(kind) {
+      document.getElementById('modal-' + kind).classList.add('active');
+      updateCount(kind);
+    }
+
+    // Closes a picker modal and refreshes the button state
+    function closePicker(kind) {
+      document.getElementById('modal-' + kind).classList.remove('active');
+      updateCount(kind);
+    }
+
+    // "Done" in a modal delegates to closePicker
+    function applyPicker(kind) { closePicker(kind); }
+
+    // Clears all checkboxes in a modal and updates counts
+    function clearPicker(kind) {
+      document.querySelectorAll('#modal-' + kind + ' .pick-box').forEach(b => b.checked = false);
+      updateCount(kind);
+    }
+
+    // Updates:
+    // 1) the "Selected: N" text in the modal,
+    // 2) the inline "(N selected)" text on the button,
+    // 3) the button color (green when N ≥ 1)
+    function updateCount(kind) {
+      const n = document.querySelectorAll('#modal-' + kind + ' .pick-box:checked').length;
+
+      const cSpan = document.getElementById('count-' + kind);
+      if (cSpan) cSpan.textContent = n;
+
+      const inline = document.getElementById('inline-count-' + kind);
+      if (inline) inline.textContent = n ? `(${n} selected)` : '';
+
+      const btn = document.querySelector(`.picker-btn[data-kind="${kind}"]`);
+      if (btn) {
+        if (n > 0) btn.classList.add('btn-chosen');
+        else btn.classList.remove('btn-chosen');
+      }
+    }
+
+    // Backdrop click closes the modal.
+    // Change events inside modals keep the counters live.
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) modal.classList.remove('active');
+      });
+      modal.addEventListener('change', (e) => {
+        if (e.target.classList.contains('pick-box')) {
+          const kind = e.target.getAttribute('data-kind');
+          updateCount(kind);
+        }
+      });
+    });
+
+    // Initialize counts at load time (SEAS is pre-checked in School)
+    window.addEventListener('DOMContentLoaded', () => {
+      ['subject','school','level','type','credit','campus','status','part','honors'].forEach(updateCount);
+    });
+
+    // Toggles the Add/Added state on a Schedule card
+    function toggleAdd(btn) {
+      if (btn.classList.contains('added')) {
+        btn.classList.remove('added');
+        btn.classList.add('add');
+        btn.textContent = 'Add';
+      } else {
+        btn.classList.remove('add');
+        btn.classList.add('added');
+        btn.textContent = 'Added';
+      }
+    }
+  </script>
+</body>
+</html>
